@@ -24,9 +24,11 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# claude code
-.claude/settings.local.json
-.claude/history.jsonl
+# claude code — only track CLAUDE.md, skills/, and agents/
+.claude/*
+!.claude/CLAUDE.md
+!.claude/skills/
+!.claude/agents/
 .opencode/
 
 package-lock.json

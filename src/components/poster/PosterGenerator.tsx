@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { PosterPreview, type PosterData, type Person } from "./PosterPreview";
 
 import { toPng } from "html-to-image";
@@ -29,6 +29,47 @@ const defaultData: PosterData = {
 export const PosterGenerator: React.FC = () => {
   const [data, setData] = useState<PosterData>(defaultData);
   const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const patch: Partial<PosterData> = {};
+
+    const ep = params.get("ep");
+    if (ep) patch.episodeNumber = parseInt(ep) || defaultData.episodeNumber;
+
+    const title = params.get("title");
+    if (title) patch.title = title.replace(/\\n/g, "\n");
+
+    const desc = params.get("desc");
+    if (desc) patch.description = desc;
+
+    const items = params.get("items");
+    if (items) patch.contentItems = items.split("|").filter((s) => s.trim());
+
+    const date = params.get("date");
+    if (date) {
+      const display = isoToDisplay(date);
+      if (display) patch.date = display;
+    }
+
+    const meetingId = params.get("meetingId");
+    if (meetingId) patch.meetingId = meetingId;
+
+    const guestParams = params.getAll("guest");
+    if (guestParams.length > 0) {
+      patch.guests = guestParams.map((g) => {
+        const [name, nameCn, title, subtitle] = g.split(";");
+        const person: Person = { name: name || "", title: title || "" };
+        if (nameCn) person.nameCn = nameCn;
+        if (subtitle) person.subtitle = subtitle;
+        return person;
+      });
+    }
+
+    if (Object.keys(patch).length > 0) {
+      setData((d) => ({ ...d, ...patch }));
+    }
+  }, []);
 
   const update = useCallback(
     (patch: Partial<PosterData>) => setData((d) => ({ ...d, ...patch })),
@@ -298,15 +339,8 @@ export const PosterGenerator: React.FC = () => {
             onChange={(e) => {
               const v = e.target.value;
               if (v) {
-                const d = new Date(v);
-                const yyyy = d.getFullYear();
-                const mm = String(d.getMonth() + 1).padStart(2, "0");
-                const dd = String(d.getDate()).padStart(2, "0");
-                const hh = String(d.getHours()).padStart(2, "0");
-                const mi = String(d.getMinutes()).padStart(2, "0");
-                const dayNames = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
-                const day = dayNames[d.getDay()];
-                update({ date: `${yyyy}.${mm}.${dd} (${day}) ${hh}:${mi}` });
+                const display = isoToDisplay(v);
+                if (display) update({ date: display });
               }
             }}
           />
@@ -357,6 +391,19 @@ export const PosterGenerator: React.FC = () => {
     </div>
   );
 };
+
+function isoToDisplay(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  const dayNames = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  const day = dayNames[d.getDay()];
+  return `${yyyy}.${mm}.${dd} (${day}) ${hh}:${mi}`;
+}
 
 function textToPerson(text: string) {
   const lines = text.split("\n").filter((l) => l.trim());

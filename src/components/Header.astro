@@ -1,4 +1,6 @@
 ---
+import ThemeToggle from './ThemeToggle.astro';
+
 const navLinks = [
   { href: '/articles', label: '文章' },
   { href: '/authors', label: '作者' },
@@ -33,19 +35,25 @@ const currentPath = Astro.url.pathname;
           {external && <span class="ml-0.5 text-xs opacity-50">↗</span>}
         </a>
       ))}
+      <div class="pl-4 border-l border-[var(--color-surface-border)]">
+        <ThemeToggle />
+      </div>
     </div>
 
-    <!-- Mobile hamburger -->
-    <button
-      id="mobile-menu-toggle"
-      type="button"
-      class="flex sm:hidden p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
-      aria-label="Toggle menu"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-      </svg>
-    </button>
+    <!-- Mobile: Theme toggle + hamburger -->
+    <div class="flex items-center gap-3 sm:hidden">
+      <ThemeToggle />
+      <button
+        id="mobile-menu-toggle"
+        type="button"
+        class="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+        aria-label="Toggle menu"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+    </div>
   </nav>
 
   <!-- Mobile nav -->
